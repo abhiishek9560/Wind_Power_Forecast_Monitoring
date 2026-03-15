@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import ForecastChart from './components/ForecastChart';
@@ -6,8 +6,8 @@ import { getActualGeneration, getForecastGeneration, getDateRange } from './serv
 
 function App() {
   // Date range state
-  const [startDate, setStartDate] = useState(new Date('2024-01-15T08:00:00'));
-  const [endDate, setEndDate] = useState(new Date('2024-01-16T08:00:00'));
+  const [startDate, setStartDate] = useState(new Date('2024-01-15T00:00:00'));
+  const [endDate, setEndDate] = useState(new Date('2024-01-16T00:00:00'));
   
   // Available date range from server
   const [minDate, setMinDate] = useState(null);
@@ -91,17 +91,48 @@ function App() {
     fetchData();
   }, [fetchData]);
 
+  // Calculate statistics
+  const stats = useMemo(() => {
+    if (!chartData || chartData.length === 0) return null;
+
+    const validData = chartData.filter(d => d.actual !== undefined && d.forecast !== undefined);
+    if (validData.length === 0) return null;
+
+    const errors = validData.map(d => d.forecast - d.actual);
+    const absErrors = errors.map(e => Math.abs(e));
+    
+    const mae = absErrors.reduce((a, b) => a + b, 0) / absErrors.length;
+    const avgActual = validData.reduce((a, b) => a + b.actual, 0) / validData.length;
+    const avgForecast = validData.reduce((a, b) => a + b.forecast, 0) / validData.length;
+    const mape = (absErrors.reduce((a, b, i) => a + (b / validData[i].actual), 0) / validData.length) * 100;
+
+    return {
+      dataPoints: validData.length,
+      mae: mae.toFixed(0),
+      mape: mape.toFixed(1),
+      avgActual: avgActual.toFixed(0),
+      avgForecast: avgForecast.toFixed(0),
+    };
+  }, [chartData]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
-            Wind Power Forecast Monitoring
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            UK National Wind Power Generation - January 2024
-          </p>
+      <header className="bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex items-center gap-3">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-white">
+                Wind Power Forecast Monitoring
+              </h1>
+              <p className="text-sm text-blue-100 mt-0.5">
+                UK National Wind Power Generation - January 2024
+              </p>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -174,6 +205,32 @@ function App() {
           </div>
         </div>
 
+        {/* Statistics Cards */}
+        {stats && !loading && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
+              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wide">Avg Actual</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-800">{Number(stats.avgActual).toLocaleString()}</p>
+              <p className="text-xs text-gray-400">MW</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
+              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wide">Avg Forecast</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-800">{Number(stats.avgForecast).toLocaleString()}</p>
+              <p className="text-xs text-gray-400">MW</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-amber-500">
+              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wide">Mean Abs Error</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-800">{Number(stats.mae).toLocaleString()}</p>
+              <p className="text-xs text-gray-400">MW</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
+              <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wide">MAPE</p>
+              <p className="text-lg sm:text-2xl font-bold text-gray-800">{stats.mape}%</p>
+              <p className="text-xs text-gray-400">{stats.dataPoints} data points</p>
+            </div>
+          </div>
+        )}
+
         {/* Error Message */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
@@ -182,7 +239,7 @@ function App() {
         )}
 
         {/* Chart */}
-        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-100">
           <div className="mb-4">
             <h2 className="text-lg font-medium text-gray-800">
               Generation vs Forecast

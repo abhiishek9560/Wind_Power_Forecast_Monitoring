@@ -54,30 +54,34 @@ const CustomTooltip = ({ active, payload, label }) => {
 const ForecastChart = ({ data, loading }) => {
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96 bg-white rounded-lg">
-        <div className="text-gray-500">Loading chart data...</div>
+      <div className="flex flex-col items-center justify-center h-72 sm:h-96 bg-gray-50 rounded-lg">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent mb-3"></div>
+        <div className="text-gray-500 text-sm">Loading chart data...</div>
       </div>
     );
   }
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-96 bg-white rounded-lg">
-        <div className="text-gray-500">No data available for selected range</div>
+      <div className="flex flex-col items-center justify-center h-72 sm:h-96 bg-gray-50 rounded-lg">
+        <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        <div className="text-gray-500 text-sm">No data available for selected range</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-96 md:h-[500px]">
+    <div className="w-full h-72 sm:h-96 md:h-[500px]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={data}
           margin={{
-            top: 20,
-            right: 30,
-            left: 20,
-            bottom: 60,
+            top: 10,
+            right: 10,
+            left: 0,
+            bottom: 50,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
