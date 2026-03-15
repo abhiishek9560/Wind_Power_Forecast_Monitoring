@@ -1,26 +1,15 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "server/index.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "client/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+  "buildCommand": "cd client && npm install && npm run build",
+  "outputDirectory": "client/dist",
+  "functions": {
+    "api/*.js": {
+      "includeFiles": "server/data/**"
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "server/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "client/$1"
-    }
+  },
+  "rewrites": [
+    { "source": "/api/actual", "destination": "/api/actual" },
+    { "source": "/api/forecast", "destination": "/api/forecast" },
+    { "source": "/api/date-range", "destination": "/api/date-range" }
   ]
 }
