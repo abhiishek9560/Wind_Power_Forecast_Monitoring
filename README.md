@@ -26,6 +26,7 @@ Users can select custom date ranges(only january 2024) and adjust the forecast h
 ## Tech Stack
 
 **Frontend:** React 19, Recharts, Tailwind CSS
+
 **Backend:** Node.js, Express (Vercel Serverless Functions)  
 **Data:** BMRS API (January 2024)
 
