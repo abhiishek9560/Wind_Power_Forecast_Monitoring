@@ -1,11 +1,26 @@
 const fs = require('fs');
 const path = require('path');
 
-// Load data
+// Load data - handle both local and Vercel environments
 let forecastData = [];
 try {
-  const dataPath = path.join(__dirname, '..', 'server', 'data', 'forecast.json');
-  forecastData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+  const possiblePaths = [
+    path.join(process.cwd(), 'server', 'data', 'forecast.json'),
+    path.join(__dirname, '..', 'server', 'data', 'forecast.json'),
+    '/var/task/server/data/forecast.json'
+  ];
+  
+  for (const dataPath of possiblePaths) {
+    if (fs.existsSync(dataPath)) {
+      forecastData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+      console.log('Loaded forecast data from:', dataPath, 'Records:', forecastData.length);
+      break;
+    }
+  }
+  
+  if (forecastData.length === 0) {
+    console.error('Could not find forecast.json in any expected location');
+  }
 } catch (error) {
   console.error('Error loading forecast data:', error.message);
 }

@@ -1,163 +1,129 @@
 # Wind Power Forecast Monitoring
 
-A full-stack web application for monitoring UK national wind power generation forecasts vs actual values.
+A web application to visualize and compare UK national wind power generation forecasts against actual values. Built as part of the REint AI Full Stack SWE Assessment.
 
-**Built for REint AI Full Stack Internship Assessment**
+## Live Demo
 
-![Application Screenshot](./docs/screenshot.png)
+🔗 **https://wind-power-forecast-monitoring.vercel.app**
+
+## About
+
+This app helps users understand forecast accuracy by displaying:
+- Actual wind power generation (blue line)
+- Forecasted generation (green line) - showing the latest forecast made at least N hours before target time
+- Key statistics like Mean Absolute Error and MAPE
+
+Users can select custom date ranges(only january 2024) and adjust the forecast horizon (0-48 hours) using an interactive slider.
 
 ## Features
 
-- Interactive date range selection with calendar widgets
-- Configurable forecast horizon slider (0-48 hours)
-- Real-time comparison chart of actual vs forecasted wind power generation
-- Responsive design (works on both desktop and mobile)
-- Data from BMRS (Balancing Mechanism Reporting Service) API
+- Date range picker with time selection
+- Adjustable forecast horizon slider (0-48h)
+- Interactive line chart comparing actual vs forecast
+- Responsive design for desktop and mobile
+- Real-time statistics (MAE, MAPE, averages)
 
 ## Tech Stack
 
-### Frontend
-- React 19 with JavaScript
-- Recharts for data visualization
-- React DatePicker for date/time selection
-- Tailwind CSS for styling
-- Axios for API requests
-- Vite for development and build
-
-### Backend
-- Node.js with Express
-- Pre-fetched January 2024 data stored as JSON
-- RESTful API endpoints
+**Frontend:** React 19, Recharts, Tailwind CSS
+**Backend:** Node.js, Express (Vercel Serverless Functions)  
+**Data:** BMRS API (January 2024)
 
 ## Project Structure
 
 ```
-Wind_Power_Forecast_Monitoring/
+├── api/                    # Vercel serverless functions
+│   ├── actual.js
+│   ├── forecast.js
+│   └── date-range.js
 ├── client/                 # React frontend
 │   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── services/       # API service layer
-│   │   ├── App.jsx         # Main application
-│   │   └── index.css       # Global styles
-│   ├── package.json
-│   └── vite.config.js
-├── server/                 # Express backend
-│   ├── data/               # Pre-fetched JSON data
-│   ├── scripts/            # Data fetching utilities
-│   ├── index.js            # Server entry point
+│   │   ├── components/
+│   │   ├── services/
+│   │   └── App.jsx
 │   └── package.json
-├── analysis/               # Jupyter notebooks (data analysis)
-└── README.md
+├── server/                 # Backend & data
+│   ├── data/              # Pre-fetched JSON data (Jan 2024)
+│   ├── scripts/           # Data fetching script
+│   └── index.js           # Express server (for local dev)
+├── analysis/              # Jupyter notebook
+│   └── Wind_Power_Forecast.ipynb
+└── vercel.json
 ```
 
-## Getting Started
+## Running Locally
 
 ### Prerequisites
-- Node.js (v18+)
+- Node.js v18+
 - npm
 
-### Installation
+### Setup
 
-1. **Clone the repository**
-   ```bash
-   git clone <repo-url>
-   cd Wind_Power_Forecast_Monitoring
-   ```
+```bash
+# Clone the repo
+git clone https://github.com/abhiishek9560/Wind_Power_Forecast_Monitoring.git
+cd Wind_Power_Forecast_Monitoring
 
-2. **Install backend dependencies**
-   ```bash
-   cd server
-   npm install
-   ```
+# Install and run backend
+cd server
+npm install
+npm start
+# Server runs on http://localhost:5000
 
-3. **Fetch data from BMRS API** (if not already present)
-   ```bash
-   npm run fetch-data
-   ```
+# In a new terminal - Install and run frontend
+cd client
+npm install
+npm run dev
+# Frontend runs on http://localhost:5173
+```
 
-4. **Install frontend dependencies**
-   ```bash
-   cd ../client
-   npm install
-   ```
+### Fetching Fresh Data (Optional)
 
-### Running Locally
-
-1. **Start the backend server**
-   ```bash
-   cd server
-   npm start
-   ```
-   Server runs on `http://localhost:5000`
-
-2. **Start the frontend** (in a new terminal)
-   ```bash
-   cd client
-   npm run dev
-   ```
-   Frontend runs on `http://localhost:5173`
-
-3. **Open the app**
-   Navigate to `http://localhost:5173` in your browser
+```bash
+cd server
+npm run fetch-data
+```
 
 ## API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/health` | GET | Health check |
-| `/api/actual` | GET | Get actual generation data |
-| `/api/forecast` | GET | Get forecast data with horizon filtering |
-| `/api/date-range` | GET | Get available data date range |
 
-### Query Parameters
+ `GET /api/actual?startTime=&endTime=` -> Actual generation data 
+ `GET /api/forecast?startTime=&endTime=&horizon=4` -> Forecast data with horizon filter 
+ `GET /api/date-range` -> Available data range 
 
-**`/api/actual`** and **`/api/forecast`**:
-- `startTime` (required): ISO date string
-- `endTime` (required): ISO date string
-- `horizon` (forecast only): Forecast horizon in hours (default: 4)
+## Analysis
 
-## Deployment
+The `analysis/` folder contains a Jupyter notebook with:
 
-### Frontend (Vercel)
-1. Push code to GitHub
-2. Connect repository to Vercel
-3. Set environment variable: `VITE_API_URL` = your backend URL
-4. Deploy
+1. **Forecast Error Analysis**
+   - Mean, Median, P99 absolute error
+   - Error distribution
+   - Error vs forecast horizon
+   - Error by time of day
 
-### Backend (Render)
-1. Push code to GitHub
-2. Create new Web Service on Render
-3. Set root directory to `server`
-4. Build command: `npm install`
-5. Start command: `npm start`
-6. Deploy
-
-## Live Demo
-
-- **App URL**: [Add Vercel/Heroku URL]
-- **Demo Video**: [Add YouTube URL]
+2. **Wind Generation Reliability**
+   - Historical generation patterns
+   - Percentile analysis
+   - Recommendations for reliable MW capacity
 
 ## Data Sources
 
-- **Actual Generation**: [BMRS FUELHH Dataset](https://bmrs.elexon.co.uk/api-documentation/endpoint/datasets/FUELHH/stream)
-- **Forecast Data**: [BMRS WINDFOR Dataset](https://bmrs.elexon.co.uk/api-documentation/endpoint/datasets/WINDFOR/stream)
+- [BMRS FUELHH Dataset](https://bmrs.elexon.co.uk/api-documentation/endpoint/datasets/FUELHH/stream) - Actual generation
+- [BMRS WINDFOR Dataset](https://bmrs.elexon.co.uk/api-documentation/endpoint/datasets/WINDFOR/stream) - Forecasts
 
-## AI Tools Disclosure
+## AI Tools Used
 
-This project was built with assistance from GitHub Copilot (Claude) for:
-- Project structure setup
-- API integration code
-- React component scaffolding
-- Documentation
+I used **GitHub Copilot** to assist with:
+- Boilerplate code and component structure
+- Debugging deployment issues
+- Writing API endpoint handlers
 
-The analytical notebooks (in `/analysis`) were created manually to demonstrate first-principles reasoning.
+The data analysis in the Jupyter notebook was done with my own analytical thinking. I used AI only for minor help like fixing syntax errors or looking up library functions.
 
 ## Author
 
-**[Your Name]**
-- LinkedIn: [Your LinkedIn URL]
-- Wellfound: [Your Wellfound URL]
+Built by Abhishek Kumar
 
-## License
+---
 
-This project is created for educational/assessment purposes.
+*Submitted for REint AI Full Stack SWE Challenge*

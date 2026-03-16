@@ -1,11 +1,27 @@
 const fs = require('fs');
 const path = require('path');
 
-// Load data
+// Load data - handle both local and Vercel environments
 let actualData = [];
 try {
-  const dataPath = path.join(__dirname, '..', 'server', 'data', 'actual.json');
-  actualData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+  // Try multiple paths for compatibility
+  const possiblePaths = [
+    path.join(process.cwd(), 'server', 'data', 'actual.json'),
+    path.join(__dirname, '..', 'server', 'data', 'actual.json'),
+    '/var/task/server/data/actual.json'
+  ];
+  
+  for (const dataPath of possiblePaths) {
+    if (fs.existsSync(dataPath)) {
+      actualData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+      console.log('Loaded actual data from:', dataPath, 'Records:', actualData.length);
+      break;
+    }
+  }
+  
+  if (actualData.length === 0) {
+    console.error('Could not find actual.json in any expected location');
+  }
 } catch (error) {
   console.error('Error loading actual data:', error.message);
 }
